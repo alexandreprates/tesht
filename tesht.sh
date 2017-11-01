@@ -122,6 +122,14 @@ function assert_fail() {
   fi
 }
 
+function assert_dir() {
+  [[ -d $1 ]] && __success || __fail "Dir '$1' does not exists."
+}
+
+function assert_file() {
+  [[ -e $1 ]] && __success || __fail "File '$1' does not exists."
+}
+
 function report() {
   popd > /dev/null
   echo ""
