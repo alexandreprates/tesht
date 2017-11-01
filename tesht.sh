@@ -9,7 +9,7 @@ echo -e "Loading Tesht\n"
 function __uuid() {
   if [ -f /proc/sys/kernel/random/uuid ]; then
     cat /proc/sys/kernel/random/uuid
-  elif [ -x "$(command -v foo)" ]; then
+  elif [ -x "$(command -v uuidgen)" ]; then
     uuidgen
   else
     echo Cannot generate UUID!
@@ -20,6 +20,7 @@ function __uuid() {
 BROKEN=
 
 function setup() {
+  pushd . > /dev/null
   TESTFAILED=
   FAILLOG=/tmp/$(__uuid)
   STDOUT=/tmp/$(__uuid)
@@ -35,10 +36,10 @@ function __success() {
 function __fail() {
   TESTFAILED=true
   BROKEN=true
-  MESSAGE="IN ${FUNCNAME[2]}:${BASH_LINENO[2]}\n"
+  MESSAGE="IN ${FUNCNAME[-3]}:${BASH_LINENO[-3]}\n"
 
   if [ $# -eq 0 ]; then
-    MESSAGE="$MESSAGE Command: \"$@\"\n"
+    MESSAGE="$MESSAGE Command: \"$COMMAND\"\n"
     MESSAGE="$MESSAGE \"$(cat $STDERR | cut -d: -f 3-)\""
   else
     MESSAGE="$MESSAGE $1"
@@ -122,6 +123,7 @@ function assert_fail() {
 }
 
 function report() {
+  popd > /dev/null
   echo ""
   if [ $TESTFAILED ]; then
     echo -e "$(cat $FAILLOG)"
