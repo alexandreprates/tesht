@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/bin/bash
 # Tesht is a microframework to help you to test your sh/bash scripts!
 # by Alexandre Prates 23/Oct/2017
 
