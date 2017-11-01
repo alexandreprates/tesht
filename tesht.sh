@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/local/bin/bash
 # Tesht is a microframework to help you to test your sh/bash scripts!
 # by Alexandre Prates 23/Oct/2017
 
@@ -9,7 +9,7 @@ echo -e "Loading Tesht\n"
 function __uuid() {
   if [ -f /proc/sys/kernel/random/uuid ]; then
     cat /proc/sys/kernel/random/uuid
-  elif [ which uuidgen ]; then
+  elif [ -x "$(command -v foo)" ]; then
     uuidgen
   else
     echo Cannot generate UUID!
@@ -17,23 +17,24 @@ function __uuid() {
   fi
 }
 
-FAILED=
-FAILLOG=/tmp/$(__uuid)
-STDOUT=/tmp/$(__uuid)
-STDERR=/tmp/$(__uuid)
-RETURNCODE=
-COMMAND=
+BROKEN=
 
-ASSETSDIR=$(dirname '$0')
-[ -e $ASSETSDIR/before_run.sh ] && echo "Load before run" && $ASSETSDIR/before_run.sh
-[ -e $ASSETSDIR/after_run.sh ] && echo "Load after run" && $ASSETSDIR/after_run.sh
+function setup() {
+  TESTFAILED=
+  FAILLOG=/tmp/$(__uuid)
+  STDOUT=/tmp/$(__uuid)
+  STDERR=/tmp/$(__uuid)
+  RETURNCODE=
+  COMMAND=
+}
 
 function __success() {
   printf "."
 }
 
 function __fail() {
-  FAILED=true
+  TESTFAILED=true
+  BROKEN=true
   MESSAGE="IN ${FUNCNAME[2]}:${BASH_LINENO[2]}\n"
 
   if [ $# -eq 0 ]; then
@@ -53,7 +54,7 @@ function test() {
 }
 
 function assert_equal() {
-  if [[ $1 == $2 ]]; then
+  if [[ "$1" == "$2" ]]; then
     __success
   else
     local MESSAGE=$"EXPECTED: \"$1\" \n GOT: \"$2\""
@@ -62,7 +63,7 @@ function assert_equal() {
 }
 
 function assert_match() {
-  if [[ $2 =~ $1 ]]; then
+  if [[ "$2" =~ "$1" ]]; then
     __success
   else
     local MESSAGE=$"Not match: \"$1\"\n IN: \"$2\""
@@ -89,7 +90,7 @@ function assert_not_match() {
 }
 
 function assert_stdout() {
-  local MESSAGE="$(cat $STDOUT)"
+  local MESSAGE="`cat $STDOUT`"
   assert_match "$@" "$MESSAGE"
 }
 
@@ -121,13 +122,24 @@ function assert_fail() {
 }
 
 function report() {
-  echo -e "\n"
-  if [ $FAILED ]; then
+  echo ""
+  if [ $TESTFAILED ]; then
     echo -e "$(cat $FAILLOG)"
-    echo -e "\nSorry something seems broken"
-    exit 1
-  else
-    echo "Congratulations everthing is right!"
-    exit 0
   fi
+  echo ""
 }
+
+for TESTFILE in $@ ; do
+  setup
+  echo "Running $TESTFILE"
+  source $TESTFILE
+  report
+done
+
+if [ $BROKEN ]; then
+  echo "Sorry something is broken"
+  exit 1
+else
+  echo "Congratulations everthing is right!"
+  exit 0
+fi
