@@ -1,6 +1,6 @@
-#!/bin/bash
-# Tesht is a microframework to help you to test your sh/bash scripts!
-# by Alexandre Prates 23/Oct/2017
+#!/usr/bin/env bash
+# Tesht is a microframework to help you to test your bash scripts!
+# by Alexandre Prates Oct/2017
 
 # set -x
 
@@ -36,7 +36,7 @@ function __success() {
 function __fail() {
   TESTFAILED=true
   BROKEN=true
-  MESSAGE="IN ${FUNCNAME[-3]}:${BASH_LINENO[-3]}\n"
+  MESSAGE="IN ${FUNCNAME[*]: -3:1}:${BASH_LINENO[*]: -3:1}\n"
 
   if [ $# -eq 0 ]; then
     MESSAGE="$MESSAGE Command: \"$COMMAND\"\n"
@@ -55,7 +55,7 @@ function test() {
 }
 
 function assert_equal() {
-  if [[ "$1" == "$2" ]]; then
+  if [[ $1 == $2 ]]; then
     __success
   else
     local MESSAGE=$"EXPECTED: \"$1\" \n GOT: \"$2\""
@@ -64,7 +64,7 @@ function assert_equal() {
 }
 
 function assert_match() {
-  if [[ "$2" =~ "$1" ]]; then
+  if [[ $2 =~ $1 ]]; then
     __success
   else
     local MESSAGE=$"Not match: \"$1\"\n IN: \"$2\""
