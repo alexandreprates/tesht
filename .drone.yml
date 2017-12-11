@@ -2,4 +2,4 @@ pipeline:
   test:
     image: alpine
     commands:
-      - echo 'ok'
+      - echo 'Working?'
