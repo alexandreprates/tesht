@@ -1,6 +1,6 @@
-#!/bin/sh
-# Tesht is a microframework to help you to test your sh/bash scripts!
-# by Alexandre Prates 23/Oct/2017
+#!/usr/bin/env bash
+# Tesht is a microframework to help you to test your bash scripts!
+# by Alexandre Prates Oct/2017
 
 # set -x
 
@@ -9,7 +9,7 @@ echo -e "Loading Tesht\n"
 function __uuid() {
   if [ -f /proc/sys/kernel/random/uuid ]; then
     cat /proc/sys/kernel/random/uuid
-  elif [ which uuidgen ]; then
+  elif [ -x "$(command -v uuidgen)" ]; then
     uuidgen
   else
     echo Cannot generate UUID!
@@ -17,27 +17,29 @@ function __uuid() {
   fi
 }
 
-FAILED=
-FAILLOG=/tmp/$(__uuid)
-STDOUT=/tmp/$(__uuid)
-STDERR=/tmp/$(__uuid)
-RETURNCODE=
-COMMAND=
+BROKEN=
 
-ASSETSDIR=$(dirname '$0')
-[ -e $ASSETSDIR/before_run.sh ] && echo "Load before run" && $ASSETSDIR/before_run.sh
-[ -e $ASSETSDIR/after_run.sh ] && echo "Load after run" && $ASSETSDIR/after_run.sh
+function setup() {
+  pushd . > /dev/null
+  TESTFAILED=
+  FAILLOG=/tmp/$(__uuid)
+  STDOUT=/tmp/$(__uuid)
+  STDERR=/tmp/$(__uuid)
+  RETURNCODE=
+  COMMAND=
+}
 
 function __success() {
   printf "."
 }
 
 function __fail() {
-  FAILED=true
-  MESSAGE="IN ${FUNCNAME[2]}:${BASH_LINENO[2]}\n"
+  TESTFAILED=true
+  BROKEN=true
+  MESSAGE="IN ${FUNCNAME[*]: -3:1}:${BASH_LINENO[*]: -3:1}\n"
 
   if [ $# -eq 0 ]; then
-    MESSAGE="$MESSAGE Command: \"$@\"\n"
+    MESSAGE="$MESSAGE Command: \"$COMMAND\"\n"
     MESSAGE="$MESSAGE \"$(cat $STDERR | cut -d: -f 3-)\""
   else
     MESSAGE="$MESSAGE $1"
@@ -89,7 +91,7 @@ function assert_not_match() {
 }
 
 function assert_stdout() {
-  local MESSAGE="$(cat $STDOUT)"
+  local MESSAGE="`cat $STDOUT`"
   assert_match "$@" "$MESSAGE"
 }
 
@@ -120,14 +122,34 @@ function assert_fail() {
   fi
 }
 
-function report() {
-  echo -e "\n"
-  if [ $FAILED ]; then
-    echo -e "$(cat $FAILLOG)"
-    echo -e "\nSorry something seems broken"
-    exit 1
-  else
-    echo "Congratulations everthing is right!"
-    exit 0
-  fi
+function assert_dir() {
+  [[ -d $1 ]] && __success || __fail "Dir '$1' does not exists."
 }
+
+function assert_file() {
+  [[ -e $1 ]] && __success || __fail "File '$1' does not exists."
+}
+
+function report() {
+  popd > /dev/null
+  echo ""
+  if [ $TESTFAILED ]; then
+    echo -e "$(cat $FAILLOG)"
+  fi
+  echo ""
+}
+
+for TESTFILE in $@ ; do
+  setup
+  echo "Running $TESTFILE"
+  source $TESTFILE
+  report
+done
+
+if [ $BROKEN ]; then
+  echo "Sorry something is broken"
+  exit 1
+else
+  echo "Congratulations everthing is right!"
+  exit 0
+fi
