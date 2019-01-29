@@ -1,4 +1,4 @@
-# tesht
+# _teSHt_
 
 Microframework for functional tests in Bash scripts
 
