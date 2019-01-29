@@ -4,17 +4,13 @@ Microframework for functional tests in Bash scripts
 
 ## How to use
 
-test with bash 3
+Add _tesht_ to your bash project as a submodule [doc here](https://github.blog/2016-02-01-working-with-submodules/)
 
-```bash
-docker run -it --rm -v `pwd`:/`basename $(pwd)` -w /`basename $(pwd)` bash:3 ./tesht.sh "tests/*.tsh"
-```
+Write your tests using standard _tesht_ assertions
 
-or 4
+Run all tests using the docker container
 
-```bash
-docker run -it --rm -v `pwd`:/`basename $(pwd)` -w /`basename $(pwd)` bash:4 ./tesht.sh "tests/*.tsh"
-```
+Be happy
 
 ### Assertions
 
@@ -49,7 +45,14 @@ assert_stderr "cd: /no_dir: [Nn]o such file or directory"
 
 Run the tests under docker container
 
+with bash 3
+
 ```bash
-docker run -it --rm -v `pwd`:/`basename $(pwd)` -w /`basename $(pwd)` bash:latest ./tesht.sh "tests/*.tsh"
+docker run -it --rm -v `pwd`:/`basename $(pwd)` -w /`basename $(pwd)` bash:3 ./tesht.sh "tests/*.tsh"
 ```
 
+or 4
+
+```bash
+docker run -it --rm -v `pwd`:/`basename $(pwd)` -w /`basename $(pwd)` bash:4 ./tesht.sh "tests/*.tsh"
+```
