@@ -37,7 +37,7 @@ assert_fail
 assert_stderr "cd: /no_dir: [Nn]o such file or directory"
 ```
 
-### Creating tests
+### Creating tests files
 
  Create a `.tsh` file with the assertions on test dir (./tests)
  
