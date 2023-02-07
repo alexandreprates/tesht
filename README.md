@@ -1,4 +1,4 @@
-## Introduction
+# teSHT
 
 _teSHt_ is a microframework for functional testing in Bash scripts. With its simple and intuitive assertions, you can easily verify the behavior of your scripts.
 
