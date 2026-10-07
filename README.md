@@ -1,13 +1,13 @@
-# teSHT
+# teSHt
 
-teSHT is a small functional testing framework for Bash. Run a command with `test`,
+teSHt is a small functional testing framework for Bash. Run a command with `test`,
 then check its status, output, or filesystem effects with assertions.
 
-## Install or try teSHT
+## Install or try teSHt
 
 You need Bash and the standard utilities listed under [Requirements and
 Docker](#requirements-and-docker). Python and ShellCheck are only needed when
-developing teSHT itself; Docker is optional.
+developing teSHt itself; Docker is optional.
 
 To try the bundled examples, clone the `main` branch and run them:
 
@@ -17,7 +17,7 @@ cd tesht
 LC_ALL=C bash ./tesht.sh 'tests/*.tsh' 'examples/*.tsh'
 ```
 
-This should report 14 passing assertions. To use teSHT in your own project, copy
+This should report 14 passing assertions. To use teSHt in your own project, copy
 the cloned `tesht.sh` into your project root. The runner is self-contained: you do
 not need to copy its development tests or install a package.
 
@@ -42,7 +42,7 @@ submodule path if you chose that installation method.
 
 From your project root, create a `tests` directory with `mkdir -p tests`, then save
 the following as `tests/directories.tsh`. Test files contain Bash commands; they
-do not need a shebang, executable permission, or a `source` statement for teSHT.
+do not need a shebang, executable permission, or a `source` statement for teSHt.
 
 ```bash
 # tests/directories.tsh
@@ -225,9 +225,9 @@ docker run --rm -e LC_ALL=C -v "$PWD:/work:ro" -w /work \
 Remove `:ro` only if your tests need to write inside the mounted project. Use a
 fixed locale such as `LC_ALL=C` when checking localized command diagnostics.
 
-## Developing teSHT
+## Developing teSHt
 
-The regression suite uses Python 3.8+ and the standard library. It runs teSHT in
+The regression suite uses Python 3.8+ and the standard library. It runs teSHt in
 separate processes and checks their outputs and exit codes independently of the
 framework's assertions. Tests cover argument handling, all assertion forms,
 selection errors, isolation, summaries, and temporary-file cleanup.
