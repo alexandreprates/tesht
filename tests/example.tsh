@@ -1,20 +1,19 @@
-# Test the creation of a directory
-test mkdir -p /tmp/foo/bar
+# Create fixtures inside the scratch directory managed by the runner.
+test mkdir -p "$TESHT_TMPDIR/foo/bar"
 assert_success
-assert_dir /tmp/foo/bar
+assert_dir "$TESHT_TMPDIR/foo/bar"
 
-# Test changing to a directory and checking the current directory
-test cd /tmp/foo/bar
+# Commands in this file share their working directory.
+test cd "$TESHT_TMPDIR/foo/bar"
 assert_success
 test pwd
-assert_stdout /tmp/foo/bar
+assert_stdout_equal "$TESHT_TMPDIR/foo/bar"$'\n'
 
-# Test handling an error
-test cd /nonexistent_dir
+# Failed commands are captured and can be asserted explicitly.
+test cd "$TESHT_TMPDIR/missing"
 assert_fail
-assert_stderr "cd: /nonexistent_dir: No such file or directory"
+assert_stderr '[Nn]o such file or directory'
 
-# Test the presence of a file
-test touch /tmp/foo/bar/test.txt
+test touch "$TESHT_TMPDIR/foo/bar/test.txt"
 assert_success
-assert_file /tmp/foo/bar/test.txt
+assert_file "$TESHT_TMPDIR/foo/bar/test.txt"

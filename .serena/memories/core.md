@@ -1,0 +1,13 @@
+# Project Core
+- teSHT is a functional Bash test runner; runtime lives in tesht.sh. scripts/test.sh checks syntax and runs tests/regression.py, an independent Python process-level regression suite. tests/example.tsh and examples/assertions.tsh are user-facing examples.
+- Entry flow: __tesht_main preflights every literal path/glob and Bash syntax before execution, creates one mktemp directory, invokes __tesht_run_file in an isolated subshell per file, aggregates result records, and removes scratch via EXIT trap.
+- Parent returns 0 for a passing run/help, 1 for assertion/runtime/empty-file failures, 2 for selection/syntax/temp-creation errors, and 130/143 for handled INT/TERM.
+- A file starts with errexit/errtrace; unhandled errors and premature exit (even exit 0) fail. Normal return after assertions is supported. Assertions record outcomes and return success so subsequent assertions execute. Failed test commands are captured by a conditional and return success to the script; inspect with status assertions.
+- test executes quoted arguments in the current file's shell, preserving cd/function side effects. State, functions, options, traps, and cwd do not leak across files. Filesystem effects outside scratch and detached processes remain external.
+- __tesht_finish_file runs in the worker EXIT trap and writes counters to its result file. Parent does not trust missing result files. Empty assertion counts fail. __tesht_location walks the Bash source stack to report the user assertion's location.
+- TESHT_TMPDIR is public per-file scratch. __TESHT_* and __tesht_* are reserved internals; the old generic globals/setup/report API is removed. Test code is trusted, not sandboxed, and must not replace framework EXIT/INT/TERM/ERR traps.
+- assert_equal is literal; assert_file requires -f (symlinks to regular files accepted). Regex output assertions retain legacy trailing-newline stripping. Literal *_equal output assertions preserve trailing newlines through a sentinel. Output assertions handle text, not NUL-containing binary data.
+- Runtime prerequisites and compatibility matrix: `mem:tech_stack`.
+- Exact native/container validation commands: `mem:suggested_commands`.
+- API/style/work conventions: `mem:conventions`.
+- Completion checks and regression design: `mem:task_completion`.
