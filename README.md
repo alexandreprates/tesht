@@ -3,10 +3,46 @@
 teSHT is a small functional testing framework for Bash. Run a command with `test`,
 then check its status, output, or filesystem effects with assertions.
 
-## Quick start
+## Install or try teSHT
 
-Copy `tesht.sh` into your project or add this repository as a Git submodule. No
-package installation or build is required. Create a test file:
+You need Bash and the standard utilities listed under [Requirements and
+Docker](#requirements-and-docker). Python and ShellCheck are only needed when
+developing teSHT itself; Docker is optional.
+
+To try the bundled examples, clone the `main` branch and run them:
+
+```bash
+git clone --branch main https://github.com/alexandreprates/tesht.git
+cd tesht
+LC_ALL=C bash ./tesht.sh 'tests/*.tsh' 'examples/*.tsh'
+```
+
+This should report 14 passing assertions. To use teSHT in your own project, copy
+the cloned `tesht.sh` into your project root. The runner is self-contained: you do
+not need to copy its development tests or install a package.
+
+Alternatively, from the root of your existing Git repository, add a submodule:
+
+```bash
+git submodule add -b main https://github.com/alexandreprates/tesht.git vendor/tesht
+```
+
+Commit `.gitmodules` and the `vendor/tesht` entry with your project so collaborators
+use the recorded revision. After cloning your project, they can initialize it with:
+
+```bash
+git submodule update --init --recursive
+```
+
+Run tests from your project root with `bash vendor/tesht/tesht.sh 'tests/*.tsh'`.
+The examples below assume you copied the runner to `./tesht.sh`; substitute the
+submodule path if you chose that installation method.
+
+## Write your first test
+
+From your project root, create a `tests` directory with `mkdir -p tests`, then save
+the following as `tests/directories.tsh`. Test files contain Bash commands; they
+do not need a shebang, executable permission, or a `source` statement for teSHT.
 
 ```bash
 # tests/directories.tsh
@@ -28,9 +64,56 @@ Run it from your project directory:
 
 ```bash
 bash ./tesht.sh 'tests/*.tsh'
-# Or select individual files, including paths containing spaces:
-bash ./tesht.sh tests/directories.tsh 'tests/file with spaces.tsh'
+# Or select a single test file:
+bash ./tesht.sh tests/directories.tsh
 ```
+
+This test should produce six passing assertions. `TESHT_TMPDIR` is provided by the
+runner and cleaned up automatically. To test a path containing spaces, quote the
+entire filename when passing it to the runner.
+
+## Test your own script
+
+Create a `scripts` directory with `mkdir -p scripts`, then save this application
+script as `scripts/greet.sh`:
+
+```bash
+#!/usr/bin/env bash
+# scripts/greet.sh
+if [[ $# -ne 1 ]]; then
+  printf 'Usage: greet.sh NAME\n' >&2
+  exit 2
+fi
+printf 'Hello, %s!\n' "$1"
+```
+
+Save its tests as `tests/greet.tsh`:
+
+```bash
+# tests/greet.tsh
+test bash ./scripts/greet.sh 'Ada Lovelace'
+assert_success
+assert_stdout_equal $'Hello, Ada Lovelace!\n'
+assert_stderr_equal ''
+
+test bash ./scripts/greet.sh
+assert_fail 2
+assert_stdout_equal ''
+assert_stderr_equal $'Usage: greet.sh NAME\n'
+```
+
+Run `bash ./tesht.sh tests/greet.tsh` from your project root. The script runs as a
+child process, so its `exit 2` is captured by `test` and checked by `assert_fail 2`.
+Both the success and error scenarios should pass, for six assertions in total.
+In contrast, an `exit` directly inside a `.tsh` file aborts that test file.
+
+For a quick failure demonstration, change the expected greeting to a different
+name and rerun the test. You will see the failing assertion's file and line,
+expected/received text, and an overall exit code of 1. Restore the expected value
+afterward. More runnable examples are in [examples/assertions.tsh](examples/assertions.tsh)
+and [tests/example.tsh](tests/example.tsh).
+
+## Select test files
 
 The runner expands quoted pathname patterns without evaluating shell code. It
 also accepts patterns already expanded by your shell. Existing literal paths take
